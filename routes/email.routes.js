@@ -152,30 +152,5 @@ router.put('/:templateId', requireAdmin, async (req, res) => {
     }
 });
 
-// ── DELETE /api/email-templates/:templateId  — admin only ────────────────────
-router.delete('/:templateId', requireAdmin, async (req, res) => {
-    const { templateId } = req.params;
-    try {
-        const pool   = await getPool();
-        const result = await pool.request()
-            .input('templateId', sql.VarChar(50), templateId)
-            .query(`DELETE FROM EmailTemplate WHERE TemplateID = @templateId`);
-
-        if (result.rowsAffected[0] === 0)
-            return res.status(404).json({ message: 'Template not found' });
-
-        await logAudit(pool, req, {
-            action:      'EMAIL_TEMPLATE_DELETE',
-            entityType:  'EmailTemplate',
-            entityId:    templateId,
-            description: `Deleted email template ${templateId}`,
-        });
-
-        res.json({ message: 'Template deleted successfully' });
-    } catch (err) {
-        console.error('[DELETE /api/email-templates/:templateId] Error:', err.message);
-        res.status(500).json({ message: 'Failed to delete email template' });
-    }
-});
 
 module.exports = router;
